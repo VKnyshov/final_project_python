@@ -6,6 +6,13 @@ from . import models, schemas, database, crud, auth
 app = FastAPI()
 
 
+# Створюємо таблиці при старті сервера
+@app.on_event("startup")
+def startup():
+    print("✅ Перевіряємо, чи створені таблиці...")
+    models.Base.metadata.create_all(bind=database.engine)
+
+
 @app.post("/register/", response_model=schemas.UserResponse)
 def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
     db_user = crud.get_user_by_email(db, user.email)
@@ -17,7 +24,6 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_d
 
 @app.post("/login/", response_model=schemas.Token)
 def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):
-    """Авторизація користувача"""
     user = crud.get_user_by_email(db, form_data.username)
     if not user or not auth.verify_password(form_data.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -25,12 +31,12 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
     access_token = auth.create_access_token(data={"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer"}
 
+
 @app.delete("/users/me/", status_code=204)
 def delete_current_user(
-    db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(auth.get_current_user)
+        db: Session = Depends(database.get_db),
+        current_user: models.User = Depends(auth.get_current_user)
 ):
-    """Видалення поточного користувача"""
     db.delete(current_user)
     db.commit()
     return {"message": "User deleted successfully"}

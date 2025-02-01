@@ -9,13 +9,10 @@ COPY requirements.txt .
 
 # Встановлюємо залежності
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir --upgrade bcrypt && \
     pip install --no-cache-dir -r requirements.txt
-
-
 
 # Тепер копіюємо всі файли проєкту
 COPY . .
 
-# Запускаємо сервер FastAPI
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Очікуємо запуск MySQL перед стартом FastAPI
+CMD ["sh", "-c", "sleep 10 && uvicorn app.main:app --host 0.0.0.0 --port 8000"]

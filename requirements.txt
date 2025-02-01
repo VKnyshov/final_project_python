@@ -5,7 +5,7 @@ alembic
 pymysql
 python-dotenv
 passlib[bcrypt]
-pydantic[email]  # Це містить email-validator та інші розширення
+pydantic[email]
 cryptography
 python-jose[cryptography]
 python-multipart
