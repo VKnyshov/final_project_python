@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql_container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: mydatabase
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:  # Додаємо перевірку, чи MySQL готовий
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+
+  api:
+    build: .
+    container_name: fastapi_container
+    depends_on:
+      db:
+        condition: service_healthy  # Чекаємо, поки MySQL буде готовий
+    ports:
+      - "8000:8000"
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_DATABASE=mydatabase
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=user
+    volumes:
+      - .:/app
+
+volumes:
+  mysql_data:

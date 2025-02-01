@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+sqlalchemy
+alembic
+pymysql
+python-dotenv
+passlib[bcrypt]
+pydantic[email]  # Це містить email-validator та інші розширення
+cryptography
+python-jose[cryptography]
+python-multipart
+bcrypt==4.0.1
