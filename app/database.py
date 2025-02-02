@@ -9,7 +9,7 @@ load_dotenv()
 
 DATABASE_URL = f"mysql+pymysql://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}@{os.getenv('MYSQL_HOST')}/{os.getenv('MYSQL_DATABASE')}"
 
-# Чекаємо, поки MySQL стане доступним
+# Чекаємо на MySQL коли стане доступною
 for _ in range(10):  # 10 спроб з інтервалом у 3 секунди
     try:
         engine = create_engine(DATABASE_URL)
