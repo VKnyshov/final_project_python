@@ -5,9 +5,11 @@ from . import models, schemas
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 def get_user_by_email(db: Session, email: str):
     """Пошук користувача за email"""
     return db.query(models.User).filter(models.User.email == email).first()
+
 
 def create_user(db: Session, user: schemas.UserCreate):
     """Реєстрація нового користувача"""
@@ -22,6 +24,7 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.refresh(db_user)
     return db_user
 
+
 def update_user(db: Session, user: models.User, user_update: schemas.UserUpdate):
     """Оновлення користувача (тільки full_name та password)"""
     if user_update.full_name is not None:
@@ -33,23 +36,28 @@ def update_user(db: Session, user: models.User, user_update: schemas.UserUpdate)
     db.refresh(user)
     return user
 
+
 def update_last_login(db: Session, user: models.User):
     """Оновлення часу входу користувача"""
     user.last_login = datetime.utcnow()
     db.commit()
+
 
 def update_last_logout(db: Session, user: models.User):
     """Оновлення часу виходу користувача"""
     user.last_logout = datetime.utcnow()
     db.commit()
 
+
 def get_all_users(db: Session):
     """Отримати всіх користувачів"""
     return db.query(models.User).all()
 
+
 def get_user_by_id(db: Session, user_id: int):
     """Пошук користувача за ID"""
     return db.query(models.User).filter(models.User.id == user_id).first()
+
 
 def filter_users(db: Session, user_id: int = None, email: str = None, full_name: str = None, last_login: str = None):
     """Фільтрація користувачів за вказаними параметрами"""
@@ -66,13 +74,17 @@ def filter_users(db: Session, user_id: int = None, email: str = None, full_name:
 
     return query.all()
 
+
 from sqlalchemy.orm import Session
 from . import models, schemas
 from datetime import datetime
 
+
 def get_posts_by_user(db: Session, user_id: int):
     """Отримання всіх постів користувача"""
     return db.query(models.Post).filter(models.Post.user_id == user_id).all()
+
+
 # .......................................................................
 
 def create_post(db: Session, user: models.User, post_data: schemas.PostCreate):
@@ -85,6 +97,7 @@ def create_post(db: Session, user: models.User, post_data: schemas.PostCreate):
     db.commit()
     db.refresh(new_post)
     return new_post
+
 
 def delete_post(db: Session, user: models.User, post_id: int):
     """Видалення поста (тільки власник може видалити свій пост)"""
@@ -117,4 +130,3 @@ def update_post(db: Session, user: models.User, post_id: int, post_update: schem
     db.commit()
     db.refresh(post)
     return post
-

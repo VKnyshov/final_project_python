@@ -126,9 +126,9 @@ def get_user_posts(user_id: int, db: Session = Depends(database.get_db)):
 
 @app.post("/posts/", response_model=schemas.PostResponse)
 def create_post(
-    post_data: schemas.PostCreate,
-    db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(auth.get_current_user)  # Авторизація
+        post_data: schemas.PostCreate,
+        db: Session = Depends(database.get_db),
+        current_user: models.User = Depends(auth.get_current_user)  # Авторизація
 ):
     """Створення поста (тільки для авторизованих)"""
     return crud.create_post(db, current_user, post_data)
@@ -136,9 +136,9 @@ def create_post(
 
 @app.delete("/posts/{post_id}/")
 def delete_post(
-    post_id: int,
-    db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(auth.get_current_user)  # Авторизація
+        post_id: int,
+        db: Session = Depends(database.get_db),
+        current_user: models.User = Depends(auth.get_current_user)  # Авторизація
 ):
     """Видалення поста (тільки для власника)"""
     return crud.delete_post(db, current_user, post_id)
@@ -146,10 +146,10 @@ def delete_post(
 
 @app.put("/posts/{post_id}/", response_model=schemas.PostResponse)
 def edit_post(
-    post_id: int,
-    post_update: schemas.PostUpdate,
-    db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(auth.get_current_user),
+        post_id: int,
+        post_update: schemas.PostUpdate,
+        db: Session = Depends(database.get_db),
+        current_user: models.User = Depends(auth.get_current_user),
 ):
     """Редагування поста (може редагувати лише власник)"""
     return crud.update_post(db, current_user, post_id, post_update)
