@@ -42,3 +42,9 @@ def update_last_logout(db: Session, user: models.User):
     """Оновлення часу виходу користувача"""
     user.last_logout = datetime.utcnow()
     db.commit()
+
+
+# ...............................................................................
+def get_all_users(db: Session):
+    """Отримати всіх користувачів"""
+    return db.query(models.User).all()

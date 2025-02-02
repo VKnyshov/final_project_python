@@ -56,3 +56,13 @@ def logout_user(db: Session = Depends(database.get_db), current_user: models.Use
     """Фіксуємо вихід користувача"""
     crud.update_last_logout(db, current_user)
     return {"message": "Logout successful"}
+
+
+# .................................................................................
+@app.get("/users/", response_model=list[schemas.UserResponse])
+def get_users(
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(auth.get_current_user)  # Авторизація
+):
+    """Отримання списку всіх користувачів (доступно тільки авторизованим)"""
+    return crud.get_all_users(db)
