@@ -1,7 +1,6 @@
+from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from . import models, schemas
-from passlib.context import CryptContext
-from datetime import datetime
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -51,7 +50,6 @@ def get_user_by_id(db: Session, user_id: int):
     """Пошук користувача за ID"""
     return db.query(models.User).filter(models.User.id == user_id).first()
 
-# ...............................................................................
 def filter_users(db: Session, user_id: int = None, email: str = None, full_name: str = None, last_login: str = None):
     """Фільтрація користувачів за вказаними параметрами"""
     query = db.query(models.User)
@@ -66,3 +64,12 @@ def filter_users(db: Session, user_id: int = None, email: str = None, full_name:
         query = query.filter(models.User.last_login >= last_login)  # Фільтр по останньому входу (>=)
 
     return query.all()
+
+from sqlalchemy.orm import Session
+from . import models, schemas
+from datetime import datetime
+
+def get_posts_by_user(db: Session, user_id: int):
+    """Отримання всіх постів користувача"""
+    return db.query(models.Post).filter(models.Post.user_id == user_id).all()
+# .......................................................................

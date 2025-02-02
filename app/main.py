@@ -2,8 +2,10 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 from . import models, schemas, database, crud, auth
+from typing import List
 
 app = FastAPI()
+
 
 # Створюємо таблиці при старті сервера
 @app.on_event("startup")
@@ -11,14 +13,17 @@ def startup():
     print("✅ Перевіряємо, чи створені таблиці...")
     models.Base.metadata.create_all(bind=database.engine)
 
+
+# ✅ Реєстрація користувача
 @app.post("/register/", response_model=schemas.UserResponse)
 def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
     db_user = crud.get_user_by_email(db, user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-
     return crud.create_user(db, user)
 
+
+# ✅ Логін користувача
 @app.post("/login/", response_model=schemas.Token)
 def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):
     user = crud.get_user_by_email(db, form_data.username)
@@ -32,6 +37,8 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
 
     return {"access_token": access_token, "token_type": "bearer"}
 
+
+# ✅ Видалення користувача
 @app.delete("/users/me/", status_code=204)
 def delete_current_user(
         db: Session = Depends(database.get_db),
@@ -41,39 +48,42 @@ def delete_current_user(
     db.commit()
     return {"message": "User deleted successfully"}
 
+
+# ✅ Оновлення користувача
 @app.put("/users/me/", response_model=schemas.UserResponse)
 def update_current_user(
-    user_update: schemas.UserUpdate,
-    db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(auth.get_current_user),
+        user_update: schemas.UserUpdate,
+        db: Session = Depends(database.get_db),
+        current_user: models.User = Depends(auth.get_current_user),
 ):
-    """Оновлення поточного користувача"""
     updated_user = crud.update_user(db, current_user, user_update)
     return updated_user
 
+
+# ✅ Вихід користувача (оновлення last_logout)
 @app.post("/logout/", status_code=200)
 def logout_user(db: Session = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_user)):
-    """Фіксуємо вихід користувача"""
     crud.update_last_logout(db, current_user)
     return {"message": "Logout successful"}
 
-@app.get("/users/", response_model=list[schemas.UserResponse])
+
+# ✅ Отримання всіх користувачів (авторизовані)
+@app.get("/users/", response_model=List[schemas.UserResponse])
 def get_users(
-    db: Session = Depends(database.get_db),
-    current_user: models.User = Depends(auth.get_current_user)  # Авторизація
+        db: Session = Depends(database.get_db),
+        current_user: models.User = Depends(auth.get_current_user)
 ):
-    """Отримання списку всіх користувачів (доступно тільки авторизованим)"""
     return crud.get_all_users(db)
 
+
+# ✅ Пошук користувача за ID або Email
 @app.get("/users/search/", response_model=schemas.UserResponse)
 def search_user(
         user_id: int = None,
         email: str = None,
         db: Session = Depends(database.get_db),
-        current_user: models.User = Depends(auth.get_current_user)  # Авторизація
+        current_user: models.User = Depends(auth.get_current_user)
 ):
-    """Пошук користувача за ID або Email (лише для авторизованих користувачів)"""
-
     if user_id:
         user = crud.get_user_by_id(db, user_id)
     elif email:
@@ -87,9 +97,7 @@ def search_user(
     return user
 
 
-from typing import List
-
-# .................................................................................
+# ✅ Фільтрація користувачів
 @app.get("/users/filter/", response_model=List[schemas.UserResponse])
 def filter_users(
         user_id: int = None,
@@ -97,13 +105,20 @@ def filter_users(
         full_name: str = None,
         last_login: str = None,
         db: Session = Depends(database.get_db),
-        current_user: models.User = Depends(auth.get_current_user)  # Авторизація
+        current_user: models.User = Depends(auth.get_current_user)
 ):
-    """Фільтрація користувачів за ID, Email, Full Name або Last Login"""
-
     users = crud.filter_users(db, user_id, email, full_name, last_login)
 
     if not users:
         raise HTTPException(status_code=404, detail="Користувачів не знайдено")
 
     return users
+
+
+# ✅ Отримання постів користувача (неавторизовані)
+@app.get("/users/{user_id}/posts/", response_model=list[schemas.PostResponse])
+def get_user_posts(user_id: int, db: Session = Depends(database.get_db)):
+    posts = crud.get_posts_by_user(db, user_id)
+    if not posts:
+        raise HTTPException(status_code=404, detail="Користувач не має постів")
+    return posts
