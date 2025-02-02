@@ -132,3 +132,13 @@ def create_post(
 ):
     """Створення поста (тільки для авторизованих)"""
     return crud.create_post(db, current_user, post_data)
+
+
+@app.delete("/posts/{post_id}/")
+def delete_post(
+    post_id: int,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(auth.get_current_user)  # Авторизація
+):
+    """Видалення поста (тільки для власника)"""
+    return crud.delete_post(db, current_user, post_id)

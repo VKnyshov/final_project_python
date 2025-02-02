@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from . import models, schemas
@@ -85,3 +86,16 @@ def create_post(db: Session, user: models.User, post_data: schemas.PostCreate):
     db.refresh(new_post)
     return new_post
 
+def delete_post(db: Session, user: models.User, post_id: int):
+    """Видалення поста (тільки власник може видалити свій пост)"""
+    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+
+    if not post:
+        raise HTTPException(status_code=404, detail="Пост не знайдено")
+
+    if post.user_id != user.id:
+        raise HTTPException(status_code=403, detail="Ви не можете видалити чужий пост")
+
+    db.delete(post)
+    db.commit()
+    return {"message": "Пост успішно видалено"}
