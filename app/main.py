@@ -5,13 +5,11 @@ from . import models, schemas, database, crud, auth
 
 app = FastAPI()
 
-
 # Створюємо таблиці при старті сервера
 @app.on_event("startup")
 def startup():
     print("✅ Перевіряємо, чи створені таблиці...")
     models.Base.metadata.create_all(bind=database.engine)
-
 
 @app.post("/register/", response_model=schemas.UserResponse)
 def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
@@ -20,7 +18,6 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(database.get_d
         raise HTTPException(status_code=400, detail="Email already registered")
 
     return crud.create_user(db, user)
-
 
 @app.post("/login/", response_model=schemas.Token)
 def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):
@@ -31,7 +28,6 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
     access_token = auth.create_access_token(data={"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer"}
 
-
 @app.delete("/users/me/", status_code=204)
 def delete_current_user(
         db: Session = Depends(database.get_db),
@@ -40,3 +36,13 @@ def delete_current_user(
     db.delete(current_user)
     db.commit()
     return {"message": "User deleted successfully"}
+
+@app.put("/users/me/", response_model=schemas.UserResponse)
+def update_current_user(
+    user_update: schemas.UserUpdate,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(auth.get_current_user),
+):
+    """Оновлення поточного користувача"""
+    updated_user = crud.update_user(db, current_user, user_update)
+    return updated_user

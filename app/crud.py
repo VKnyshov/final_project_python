@@ -20,3 +20,14 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.commit()
     db.refresh(db_user)
     return db_user
+
+def update_user(db: Session, user: models.User, user_update: schemas.UserUpdate):
+    """Оновлення користувача (тільки full_name та password)"""
+    if user_update.full_name is not None:
+        user.full_name = user_update.full_name
+    if user_update.password is not None:
+        user.password = pwd_context.hash(user_update.password)  # Хешуємо пароль перед збереженням
+
+    db.commit()
+    db.refresh(user)
+    return user

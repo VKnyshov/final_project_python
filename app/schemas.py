@@ -6,6 +6,11 @@ class UserCreate(BaseModel):
     password: str
     full_name: Optional[str] = None
 
+class UserUpdate(BaseModel):
+    """Схема для оновлення користувача"""
+    full_name: Optional[str] = None
+    password: Optional[str] = None
+
 class UserResponse(BaseModel):
     id: int
     email: str
