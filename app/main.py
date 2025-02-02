@@ -142,3 +142,14 @@ def delete_post(
 ):
     """Видалення поста (тільки для власника)"""
     return crud.delete_post(db, current_user, post_id)
+
+
+@app.put("/posts/{post_id}/", response_model=schemas.PostResponse)
+def edit_post(
+    post_id: int,
+    post_update: schemas.PostUpdate,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(auth.get_current_user),
+):
+    """Редагування поста (може редагувати лише власник)"""
+    return crud.update_post(db, current_user, post_id, post_update)

@@ -47,3 +47,6 @@ class PostResponse(PostBase):
 
     class Config:
         from_attributes = True
+
+class PostUpdate(BaseModel):
+    text: str  # Оновлений текст поста

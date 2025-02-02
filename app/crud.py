@@ -99,3 +99,22 @@ def delete_post(db: Session, user: models.User, post_id: int):
     db.delete(post)
     db.commit()
     return {"message": "Пост успішно видалено"}
+
+
+def update_post(db: Session, user: models.User, post_id: int, post_update: schemas.PostUpdate):
+    """Редагування поста (тільки власник може змінити свій пост)"""
+    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+
+    if not post:
+        raise HTTPException(status_code=404, detail="Пост не знайдено")
+
+    if post.user_id != user.id:
+        raise HTTPException(status_code=403, detail="Ви не можете редагувати чужий пост")
+
+    post.text = post_update.text  # Оновлюємо текст поста
+    post.updated_at = datetime.utcnow()  # Оновлюємо час зміни
+
+    db.commit()
+    db.refresh(post)
+    return post
+
