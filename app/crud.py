@@ -47,8 +47,22 @@ def get_all_users(db: Session):
     """Отримати всіх користувачів"""
     return db.query(models.User).all()
 
-# ...............................................................................
 def get_user_by_id(db: Session, user_id: int):
     """Пошук користувача за ID"""
     return db.query(models.User).filter(models.User.id == user_id).first()
 
+# ...............................................................................
+def filter_users(db: Session, user_id: int = None, email: str = None, full_name: str = None, last_login: str = None):
+    """Фільтрація користувачів за вказаними параметрами"""
+    query = db.query(models.User)
+
+    if user_id:
+        query = query.filter(models.User.id == user_id)
+    if email:
+        query = query.filter(models.User.email.ilike(f"%{email}%"))  # Пошук часткового збігу email
+    if full_name:
+        query = query.filter(models.User.full_name.ilike(f"%{full_name}%"))  # Пошук часткового збігу full_name
+    if last_login:
+        query = query.filter(models.User.last_login >= last_login)  # Фільтр по останньому входу (>=)
+
+    return query.all()
