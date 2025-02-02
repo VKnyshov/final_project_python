@@ -57,8 +57,6 @@ def logout_user(db: Session = Depends(database.get_db), current_user: models.Use
     crud.update_last_logout(db, current_user)
     return {"message": "Logout successful"}
 
-
-# .................................................................................
 @app.get("/users/", response_model=list[schemas.UserResponse])
 def get_users(
     db: Session = Depends(database.get_db),
@@ -66,3 +64,26 @@ def get_users(
 ):
     """Отримання списку всіх користувачів (доступно тільки авторизованим)"""
     return crud.get_all_users(db)
+
+# .................................................................................
+
+@app.get("/users/search/", response_model=schemas.UserResponse)
+def search_user(
+        user_id: int = None,
+        email: str = None,
+        db: Session = Depends(database.get_db),
+        current_user: models.User = Depends(auth.get_current_user)  # Авторизація
+):
+    """Пошук користувача за ID або Email (лише для авторизованих користувачів)"""
+
+    if user_id:
+        user = crud.get_user_by_id(db, user_id)
+    elif email:
+        user = crud.get_user_by_email(db, email)
+    else:
+        raise HTTPException(status_code=400, detail="Необхідно вказати або ID, або Email")
+
+    if not user:
+        raise HTTPException(status_code=404, detail="Користувача не знайдено")
+
+    return user
