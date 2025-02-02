@@ -122,3 +122,13 @@ def get_user_posts(user_id: int, db: Session = Depends(database.get_db)):
     if not posts:
         raise HTTPException(status_code=404, detail="Користувач не має постів")
     return posts
+
+
+@app.post("/posts/", response_model=schemas.PostResponse)
+def create_post(
+    post_data: schemas.PostCreate,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(auth.get_current_user)  # Авторизація
+):
+    """Створення поста (тільки для авторизованих)"""
+    return crud.create_post(db, current_user, post_data)

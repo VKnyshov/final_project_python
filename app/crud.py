@@ -73,3 +73,15 @@ def get_posts_by_user(db: Session, user_id: int):
     """Отримання всіх постів користувача"""
     return db.query(models.Post).filter(models.Post.user_id == user_id).all()
 # .......................................................................
+
+def create_post(db: Session, user: models.User, post_data: schemas.PostCreate):
+    """Створення нового поста для авторизованого користувача"""
+    new_post = models.Post(
+        text=post_data.text,
+        user_id=user.id  # Прив'язуємо пост до ID користувача
+    )
+    db.add(new_post)
+    db.commit()
+    db.refresh(new_post)
+    return new_post
+
